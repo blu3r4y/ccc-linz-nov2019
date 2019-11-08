@@ -11,13 +11,13 @@ def load(data):
     grid = np.array([d[::2] for d in data], dtype=int)
     countries = np.array([d[1::2] for d in data], dtype=int)
     return {
-        "grid": grid,
-        "countries": countries
+        "grid": grid.T,
+        "countries": countries.T
     }
 
 
 if __name__ == "__main__":
-    level, quests = 2, 5
+    level, quests = 3, 5
     for q in ["example"] + list(range(1, quests + 1)):
         input_file = r'..\data\level{0}\level{0}_{1}.in'.format(level, q)
         output_file = os.path.splitext(input_file)[0] + ".out"
