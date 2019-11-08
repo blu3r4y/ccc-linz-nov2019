@@ -2,6 +2,7 @@
 *.iml
 
 # input and output files
+*.zip
 data/*.zip
 
 # Byte-compiled / optimized / DLL files
