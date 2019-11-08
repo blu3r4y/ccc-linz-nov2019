@@ -7,17 +7,32 @@ import numpy as np
 
 
 def load(data):
-    data = [list(map(int, e.split(" "))) for e in data[1:]]
-    grid = np.array([d[::2] for d in data], dtype=int)
-    countries = np.array([d[1::2] for d in data], dtype=int)
+    data = [list(map(int, e.split(" "))) for e in data]
+    nrows, ncols = data[0]
+
+    queries = []
+    for ox, oy, dx, dy in data[2:]:
+        queries.append(((ox, oy), (dx, dy)))
+
     return {
-        "grid": grid.T,
-        "countries": countries.T
+        "nrows": nrows,
+        "ncols": ncols,
+        "queries": queries
     }
+
+    print(data)
+    pass
+    # data = [list(map(int, e.split(" "))) for e in data[1:]]
+    # grid = np.array([d[::2] for d in data], dtype=int)
+    # countries = np.array([d[1::2] for d in data], dtype=int)
+    # return {
+    #    "grid": grid.T,
+    #    "countries": countries.T
+    # }
 
 
 if __name__ == "__main__":
-    level, quests = 3, 5
+    level, quests = 4, 0
     for q in ["example"] + list(range(1, quests + 1)):
         input_file = r'..\data\level{0}\level{0}_{1}.in'.format(level, q)
         output_file = os.path.splitext(input_file)[0] + ".out"

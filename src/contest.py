@@ -1,6 +1,7 @@
 import numpy as np
 from collections import defaultdict
 from scipy.spatial.distance import euclidean
+import math
 
 
 def neighbours(x, y):
@@ -45,29 +46,88 @@ def get_closest(countries, borders, cid, cx, cy):
         distances[x, y] = euclidean([x, y], [cx, cy])
 
     minima = np.argwhere(distances == distances.min())
-    closest = sorted(minima, key=lambda xy: (xy[1], xy[0]))[0]  # row, column
+    closest = sorted(minima, key=lambda xy: (xy[1], xy[0]))[0]  # row, column sort (but transposed)
     return closest
 
 
+def get_dominance(direction):  # 0: x, 1: y
+    dx, dy = direction
+    if dx > dy:
+        return 0
+    elif dy > dx:
+        return 1
+    else:
+        return 0
+
+
+def iter_in_dominance(cells, dominance):  # 0: x, 1: y
+    if dominance == 1:
+        return sorted(cells, key=lambda e: (e[0], e[1]))
+    else:
+        return sorted(cells, key=lambda e: (e[1], e[0]))
+
+
+def gasser_kahlhofer(origin, direction, shape):
+    ox, oy = origin
+    dx, dy = direction
+
+    maxx, maxy = shape
+
+    cells = {(int(math.floor(ox)), int(math.floor(oy)))}
+
+    px = int(math.ceil(ox))
+    while px < maxx:
+        lmb = (px - ox) / dx
+        py = oy + lmb * dy
+
+        is_cross = py % 1 == 0
+        py = int(math.floor(py))
+
+        if py >= maxy:
+            break
+
+        cells.add((px, py))
+        if is_cross:
+            cells.add((px, py - 1))
+
+        px += 1
+
+    py = int(math.ceil(oy))
+    while py < maxy:
+        lmb = (py - oy) / dy
+        px = ox + lmb * dx
+
+        is_cross = px % 1 == 0
+        px = int(math.floor(px))
+
+        if px >= maxx:
+            break
+
+        cells.add((px, py))
+        if is_cross:
+            cells.add((px - 1, py))
+
+        py += 1
+
+    # lmb = (px - ox) / dx
+    # lmb = (py - oy) / dy
+
+    # px = ox + lmb * dx
+    # py = oy + lmb * dy
+
+    return list(cells)
+
+
 def solve(data):
-    _grid, _countries = data["grid"], data["countries"]
-    num_countries = len(np.unique(_countries))
-    _borders = get_borders(_countries)
+    nrows, ncols, queries = data["nrows"], data["ncols"], data["queries"]
 
-    capitals = []
+    solutions = []
 
-    for cid in range(num_countries):
-        country_coords = np.argwhere(_countries == cid)
-        cx, cy = np.floor(np.average(country_coords, axis=0)).astype(int)
+    for query in queries:
+        origin, direction = query
+        origin = (origin[0] + 0.5, origin[1] + 0.5)
+        gk = gasser_kahlhofer(origin, direction, [nrows, ncols])
+        itered = iter_in_dominance(gk, get_dominance(direction))
+        solutions.append(itered)
 
-        on_border = _borders[cid][cx, cy]  # == 1
-        outside = _countries[cx, cy] != cid
-
-        if on_border or outside:
-            cx, cy = get_closest(_countries, _borders, cid, cx, cy)
-
-        capitals.append((cx, cy))
-
-        # print(cid, "--", cx, cy, on_border)
-
-    return "\n".join([f"{x} {y}" for x, y in capitals])
+    return "\n".join([" ".join([f"{x} {y}" for x, y in xy]) for xy in solutions])
