@@ -1,2 +1,5 @@
+import math
+
+
 def solve(data):
-    return "Result"
+    return data.min(), data.max(), math.floor(data.mean())

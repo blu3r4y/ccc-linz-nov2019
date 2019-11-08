@@ -1,0 +1,4 @@
+$n
+$line{$n}
+
+$$line = $a $b
